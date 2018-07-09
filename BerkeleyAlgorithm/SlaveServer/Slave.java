@@ -33,28 +33,7 @@ public class Slave {
 				}
 			}
 		};
-		// Thread Send = new Thread() {
-		// public void run() {
-		// try {
-		// st.SendMsg();
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// };
-
-		// Thread Receive = new Thread() {
-		// public void run() {
-		// try {
-		// st.ReceiveMsg();
-		// } catch (Exception e) {
-		// e.printStackTrace();
-		// }
-		// }
-		// };
 		Synchronization.start();
-		// Send.start();
-		// Receive.start();
 
 	}
 }
@@ -154,49 +133,6 @@ class SlaveThreading {
 		recv_soc.close();
 	}
 
-	// public void SendMsg() throws Exception {
-	// String msg = "";
-	// InetAddress group = InetAddress.getByName("224.0.0.1");
-	// MulticastSocket s = new MulticastSocket(8010);
-	// while (!isComplete)
-	// Thread.sleep(1000);
-	// int[] vector = new int[nodeCount];
-	// System.out.println("Sending Messages....");
-	// System.out.println();
-	// for (int i = 0; i < 2; i++) {
-
-	// int temp = rand.nextInt(3000) + 1000;
-	// Thread.sleep(temp);
-	// msg = "message " + i + " from process " + ID_assigned;
-	// DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), group,
-	// 8010);
-	// s.send(hi);
-
-	// }
-	// }
-
-	// public void ReceiveMsg() throws Exception {
-	// String message = "";
-	// InetAddress group = InetAddress.getByName("224.0.0.1");
-	// MulticastSocket r = new MulticastSocket(8010);
-	// r.joinGroup(group);
-	// byte[] buf = new byte[1000];
-	// DatagramPacket recv = new DatagramPacket(buf, buf.length);
-	// while (!isComplete)
-	// Thread.sleep(5000);
-	// // System.out.println("Receiving messages");
-
-	// while (true) {
-
-	// r.receive(recv);
-	// message = new String(recv.getData(), 0, recv.getLength());
-	// if (message.length() > 15) {
-	// System.out.println("Received " + message);
-	// }
-
-	// }
-
-	// }
 
 	public void setSlaveTime(int num) {
 		delay_milisec = (long) num * ONE_SEC_IN_MILLI;
