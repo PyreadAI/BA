@@ -79,8 +79,8 @@ class SlaveThreading {
 		System.out.println("count: " + count);
 		InetAddress group = InetAddress.getByName("224.0.0.1");
 		// TODO
-		MulticastSocket recv_soc = new MulticastSocket(6789);
-		MulticastSocket send_soc = new MulticastSocket(6788);
+		MulticastSocket recv_soc = new MulticastSocket(8011);
+		MulticastSocket send_soc = new MulticastSocket(8010);
 		recv_soc.joinGroup(group);
 		byte[] buffer = new byte[1000];
 		DatagramPacket recv = new DatagramPacket(buffer, buffer.length);
@@ -97,7 +97,7 @@ class SlaveThreading {
 		System.out.println("System time in miliseconds sent to Master");
 		long sys_time = Calendar.getInstance().getTimeInMillis() + delay_milisec;
 		msg = Long.toString(sys_time);
-		DatagramPacket time_response = new DatagramPacket(msg.getBytes(), msg.length(), group, 6788);
+		DatagramPacket time_response = new DatagramPacket(msg.getBytes(), msg.length(), group, 8010);
 		send_soc.send(time_response);
 		// }
 		// else {
@@ -110,7 +110,7 @@ class SlaveThreading {
 	public void SyncWithMaster() throws Exception {
 		InetAddress group = InetAddress.getByName("224.0.0.1");
 		// InetAddress group = InetAddress.getByName("");
-		MulticastSocket recv_soc = new MulticastSocket(6789);
+		MulticastSocket recv_soc = new MulticastSocket(8011);
 		byte[] buf = new byte[1000];
 		DatagramPacket recv = new DatagramPacket(buf, buf.length);
 		recv_soc.joinGroup(group);
@@ -159,7 +159,7 @@ class SlaveThreading {
 	// public void SendMsg() throws Exception {
 	// String msg = "";
 	// InetAddress group = InetAddress.getByName("224.0.0.1");
-	// MulticastSocket s = new MulticastSocket(6788);
+	// MulticastSocket s = new MulticastSocket(8010);
 	// while (!isComplete)
 	// Thread.sleep(1000);
 	// int[] vector = new int[nodeCount];
@@ -171,7 +171,7 @@ class SlaveThreading {
 	// Thread.sleep(temp);
 	// msg = "message " + i + " from process " + ID_assigned;
 	// DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), group,
-	// 6788);
+	// 8010);
 	// s.send(hi);
 
 	// }
@@ -180,7 +180,7 @@ class SlaveThreading {
 	// public void ReceiveMsg() throws Exception {
 	// String message = "";
 	// InetAddress group = InetAddress.getByName("224.0.0.1");
-	// MulticastSocket r = new MulticastSocket(6788);
+	// MulticastSocket r = new MulticastSocket(8010);
 	// r.joinGroup(group);
 	// byte[] buf = new byte[1000];
 	// DatagramPacket recv = new DatagramPacket(buf, buf.length);

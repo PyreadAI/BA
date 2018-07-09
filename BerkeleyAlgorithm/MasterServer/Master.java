@@ -58,8 +58,8 @@ class MasterThreading {
 		//give a multicast address
 		InetAddress group = InetAddress.getByName("224.0.0.1");
 		//provide multicastSocket TODO
-		MulticastSocket recv_soc = new MulticastSocket(6788);
-		MulticastSocket send_soc = new MulticastSocket(6789);
+		MulticastSocket recv_soc = new MulticastSocket(8010);
+		MulticastSocket send_soc = new MulticastSocket(8011);
 		byte[] buf = new byte[1000];
 		DatagramPacket recv = new DatagramPacket(buf, buf.length);
 		recv_soc.joinGroup(group);
@@ -93,7 +93,7 @@ class MasterThreading {
 			System.out.println("Sending slave servers the new offset for adjustment....");
 			System.out.println();
 			Thread.sleep(1000);
-			DatagramPacket sync = new DatagramPacket(msg.getBytes(), msg.length(), group, 6789);
+			DatagramPacket sync = new DatagramPacket(msg.getBytes(), msg.length(), group, 8011);
 			send_soc.send(sync);
 
 		}
@@ -109,11 +109,11 @@ class MasterThreading {
 
 		InetAddress group = InetAddress.getByName("224.0.0.1");
 		//TODO
-		MulticastSocket s_soc = new MulticastSocket(6789);
+		MulticastSocket s_soc = new MulticastSocket(8011);
 		while (!syncComplete) {
 			// msg = Integer.toString(count);
 			msg = "TIME_REQUEST";
-			DatagramPacket time_request = new DatagramPacket(msg.getBytes(), msg.length(), group, 6789);
+			DatagramPacket time_request = new DatagramPacket(msg.getBytes(), msg.length(), group, 8011);
 			s_soc.send(time_request);
 			Thread.sleep(2000);
 		}
