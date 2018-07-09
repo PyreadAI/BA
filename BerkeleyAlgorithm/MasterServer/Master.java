@@ -45,7 +45,7 @@ class MasterThread {
 	Random rand = new Random();
 	int count = rand.nextInt(49) + 1;
 	int adjust = 0;
-	int slave_serv = 1;
+	int slave_serv_num = 1;
 	int offset = 0;
 	int nodeCount = 0;
 	long delay_sec = 0;
@@ -65,20 +65,26 @@ class MasterThread {
 		while (!syncComplete) {
 			recv_soc.receive(recv);
 			String message = new String(recv.getData(), 0, recv.getLength());
-			int ID = slave_serv;
-			if (slave_serv == nodeCount) {
+			int ID = slave_serv_num;
+			if (slave_serv_num == nodeCount) {
 				syncComplete = true;
 			}
 			System.out.println("New Slave Server Node registered");
-			slave_serv++;
-			int diff = Integer.valueOf(message);
-			System.out.println("Offset of " + diff + " received. Calculating average....");
-			adjust = diff / slave_serv;
-			count = count + adjust;
+			slave_serv_num++;
+			long slave_time = Integer.valueOf(message);
+			long master_time = Calendar.getInstance().getTimeInMillis()+ delay_sec * ONE_SEC_IN_MILLI;
+			long diff = master_time - slave_time;
+			System.out.println("System time from slave server received, Calculating diff and new adjustment...");
+			// int diff = Integer.valueOf(message);
+			// System.out.println("Offset of " + diff + " received. Calculating average....");
+
+			adjust = diff / slave_serv_num;
+			// count = count + adjust;
 			offset = adjust - diff;
 			msg = adjust + ":" + offset + ":" + ID + ":" + nodeCount;
-			System.out.println("Average calculated. New count: " + count);
-			System.out.println("Sending slave servers the new offset....");
+			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+			System.out.println("Average calculated. New master system time: " + sdf.format(Calendar.getInstance().getTimeInMillis()+ delay_sec * ONE_SEC_IN_MILLI +adjust));
+			System.out.println("Sending slave servers the new offset for adjustment....");
 			System.out.println();
 			Thread.sleep(1000);
 			DatagramPacket sync = new DatagramPacket(msg.getBytes(), msg.length(), group, 6789);

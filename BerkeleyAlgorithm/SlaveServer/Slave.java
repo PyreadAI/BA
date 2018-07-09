@@ -8,18 +8,18 @@ public class Slave{
 	static boolean syncComplete = false;
 	public static void main(String args[]) throws Exception
 	{
-		SlaveThread t = new SlaveThread();
-		t.ReceiveTime();
+		SlaveThread st = new SlaveThread();
+		st.ReceiveTime();
 		Thread Synchronization = new Thread()
 		{
 			public void run()
 			{
 				try{
-					t.Sync();
+					st.Sync();
 				}
-				catch (Exception Ex)
+				catch (Exception e)
 				{
-					
+					e.printStackTrace();
 				}
 			}
 		};
@@ -28,11 +28,11 @@ public class Slave{
 				public void run()
 			{
 				try{
-					t.SendMsg();
+					st.SendMsg();
 				}
-				catch(Exception ex)
+				catch(Exception e)
 				{
-				
+					e.printStackTrace();
 				}
 			}
 		};
@@ -42,15 +42,14 @@ public class Slave{
 			public void run()
 			{
 				try{
-					t.ReceiveMsg();
+					st.ReceiveMsg();
 				}
-				catch(Exception ex)
+				catch(Exception e)
 				{
-					
+					e.printStackTrace();
 				}				
 			}
 		};
-		
 		Synchronization.start();
 			//System.out.println("Part two started.");
 			Send.start();
