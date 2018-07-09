@@ -49,7 +49,7 @@ class MasterThreading {
 	int slave_serv_num = 1;
 	long offset = 0;
 	int nodeCount = 0;
-	long delay_sec = 0;
+	long delay_milisec = 0;
 	static final long ONE_SEC_IN_MILLI = 1000;
 	boolean syncComplete = false;
 
@@ -73,7 +73,7 @@ class MasterThreading {
 			System.out.println("New Slave Server Node registered");
 			slave_serv_num++;
 			long slave_time = Long.valueOf(message);
-			long master_time = Calendar.getInstance().getTimeInMillis()+ delay_sec * ONE_SEC_IN_MILLI;
+			long master_time = Calendar.getInstance().getTimeInMillis()+ delay_milisec;
 			long diff = slave_time - master_time;
 			System.out.println("diff in sec: " + diff/1000);
 			System.out.println("slave servers curr: " + slave_serv_num);
@@ -88,7 +88,8 @@ class MasterThreading {
 			System.out.println("offset is: " + offset);
 			msg = adjust + ":" + offset + ":" + ID + ":" + nodeCount;
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-			System.out.println("Average calculated. New master system time: " + sdf.format(Calendar.getInstance().getTimeInMillis()+ delay_sec * ONE_SEC_IN_MILLI + adjust));
+			delay_milisec += adjust;
+			System.out.println("Average calculated. New master system time: " + sdf.format(Calendar.getInstance().getTimeInMillis()+ delay_milisec));
 			System.out.println("Sending slave servers the new offset for adjustment....");
 			System.out.println();
 			Thread.sleep(1000);
@@ -103,7 +104,7 @@ class MasterThreading {
 	public void SendMsg() throws Exception {
 		Calendar time = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-		System.out.println("Server Clock: " + sdf.format(time.getTimeInMillis() + delay_sec * ONE_SEC_IN_MILLI));
+		System.out.println("Server Clock: " + sdf.format(time.getTimeInMillis() + delay_milisec));
 		System.out.println(count);
 
 		InetAddress group = InetAddress.getByName("224.0.0.1");
@@ -124,7 +125,7 @@ class MasterThreading {
 	}
 
 	public void setDelaySec(int num){
-		delay_sec = (long)num;
+		delay_milisec = (long)num * ONE_SEC_IN_MILLI;
 	}
 
 }
