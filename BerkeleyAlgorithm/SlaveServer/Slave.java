@@ -63,7 +63,6 @@ class SlaveThreading {
 	String msg = new String();
 	// Intializing count
 	Random rand = new Random();
-	int count = rand.nextInt(49) + 1;
 	int adjust = 0;
 	// delay used to calculate sys time
 	long delay_milisec = 0;
@@ -76,7 +75,6 @@ class SlaveThreading {
 	int nodeCount = 0;
 
 	public void ReceiveTimeRequest() throws Exception {
-		System.out.println("count: " + count);
 		InetAddress group = InetAddress.getByName("224.0.0.1");
 		// TODO
 		MulticastSocket recv_soc = new MulticastSocket(8011);

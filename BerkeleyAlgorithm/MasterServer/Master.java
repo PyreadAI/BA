@@ -44,7 +44,6 @@ class MasterThreading {
 
 	String msg = new String();
 	Random rand = new Random();
-	int count = rand.nextInt(49) + 1;
 	long adjust = 0;
 	int slave_serv_num = 1;
 	long offset = 0;
@@ -105,7 +104,6 @@ class MasterThreading {
 		Calendar time = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 		System.out.println("Server Clock: " + sdf.format(time.getTimeInMillis() + delay_milisec));
-		System.out.println(count);
 
 		InetAddress group = InetAddress.getByName("224.0.0.1");
 		//TODO
