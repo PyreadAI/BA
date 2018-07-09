@@ -8,13 +8,14 @@ public class Master {
 
 	public static void main(String[] args) throws Exception {
 		Scanner in = new Scanner(System.in);
-		MasterThread daemon = new MasterThread();
-		System.out.println("Please enter the number of the slave servers in the system.");
+		MasterThreading daemon = new MasterThreading();
+		System.out.println("Please enter the number of the slave servers in the system. (must be greater than zero)");
 		int num = in.nextInt();
 		System.out.println("Please enter the delay of the master server in seconds.");
 		int delay = in.nextInt();
 		daemon.setNodeCount(num);
 		daemon.setDelaySec(delay);
+		in.close();
 		Thread Send = new Thread() {
 			public void run() {
 				try {
@@ -39,14 +40,14 @@ public class Master {
 	}
 }
 
-class MasterThread {
+class MasterThreading {
 
 	String msg = new String();
 	Random rand = new Random();
 	int count = rand.nextInt(49) + 1;
-	int adjust = 0;
+	long adjust = 0;
 	int slave_serv_num = 1;
-	int offset = 0;
+	long offset = 0;
 	int nodeCount = 0;
 	long delay_sec = 0;
 	static final long ONE_SEC_IN_MILLI = 1000;
@@ -71,9 +72,11 @@ class MasterThread {
 			}
 			System.out.println("New Slave Server Node registered");
 			slave_serv_num++;
-			long slave_time = Integer.valueOf(message);
+			long slave_time = Long.valueOf(message);
 			long master_time = Calendar.getInstance().getTimeInMillis()+ delay_sec * ONE_SEC_IN_MILLI;
-			long diff = master_time - slave_time;
+			long diff = slave_time - master_time;
+			System.out.println("diff in sec: " + diff/1000);
+			System.out.println("slave servers curr: " + slave_serv_num);
 			System.out.println("System time from slave server received, Calculating diff and new adjustment...");
 			// int diff = Integer.valueOf(message);
 			// System.out.println("Offset of " + diff + " received. Calculating average....");
@@ -81,9 +84,11 @@ class MasterThread {
 			adjust = diff / slave_serv_num;
 			// count = count + adjust;
 			offset = adjust - diff;
+			System.out.println("adjust is: " + adjust);
+			System.out.println("offset is: " + offset);
 			msg = adjust + ":" + offset + ":" + ID + ":" + nodeCount;
 			SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-			System.out.println("Average calculated. New master system time: " + sdf.format(Calendar.getInstance().getTimeInMillis()+ delay_sec * ONE_SEC_IN_MILLI +adjust));
+			System.out.println("Average calculated. New master system time: " + sdf.format(Calendar.getInstance().getTimeInMillis()+ delay_sec * ONE_SEC_IN_MILLI + adjust));
 			System.out.println("Sending slave servers the new offset for adjustment....");
 			System.out.println();
 			Thread.sleep(1000);
@@ -91,6 +96,8 @@ class MasterThread {
 			send_soc.send(sync);
 
 		}
+		recv_soc.close();
+		send_soc.close();
 	}
 
 	public void SendMsg() throws Exception {
@@ -103,11 +110,13 @@ class MasterThread {
 		//TODO
 		MulticastSocket s_soc = new MulticastSocket(6789);
 		while (!syncComplete) {
-			msg = Integer.toString(count);
+			// msg = Integer.toString(count);
+			msg = "TIME_REQUEST";
 			DatagramPacket time_request = new DatagramPacket(msg.getBytes(), msg.length(), group, 6789);
 			s_soc.send(time_request);
 			Thread.sleep(2000);
 		}
+		s_soc.close();
 	}
 
 	public void setNodeCount(int num) throws Exception {

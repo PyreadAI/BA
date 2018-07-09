@@ -2,188 +2,205 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.lang.*;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
-public class Slave{
+public class Slave {
 	public static int master = 0;
-	static boolean syncComplete = false;
-	public static void main(String args[]) throws Exception
-	{
-		SlaveThread st = new SlaveThread();
-		st.ReceiveTime();
-		Thread Synchronization = new Thread()
-		{
-			public void run()
-			{
-				try{
-					st.Sync();
-				}
-				catch (Exception e)
-				{
+	static boolean isComplete = false;
+
+	public static void main(String args[]) throws Exception {
+		SlaveThreading st = new SlaveThreading();
+		Scanner in = new Scanner(System.in);
+		System.out.println("Please enter the delay of this slave server in seconds.");
+		int delay = in.nextInt();
+		st.setSlaveTime(delay);
+		long slave_time = Calendar.getInstance().getTimeInMillis() + delay * 1000;
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+		System.out.println(sdf.format(slave_time));
+		try {
+			st.ReceiveTimeRequest();
+		} catch (Exception e) {
+			System.out.println("receive time request from server failed");
+		}
+		in.close();
+		Thread Synchronization = new Thread() {
+			public void run() {
+				try {
+					st.SyncWithMaster();
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		};
-		Thread Send = new Thread()
-		{
-				public void run()
-			{
-				try{
-					st.SendMsg();
-				}
-				catch(Exception e)
-				{
-					e.printStackTrace();
-				}
-			}
-		};
-			
-		Thread Receive = new Thread()
-		{
-			public void run()
-			{
-				try{
-					st.ReceiveMsg();
-				}
-				catch(Exception e)
-				{
-					e.printStackTrace();
-				}				
-			}
-		};
+		// Thread Send = new Thread() {
+		// public void run() {
+		// try {
+		// st.SendMsg();
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
+		// }
+		// };
+
+		// Thread Receive = new Thread() {
+		// public void run() {
+		// try {
+		// st.ReceiveMsg();
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
+		// }
+		// };
 		Synchronization.start();
-			//System.out.println("Part two started.");
-			Send.start();
-			Receive.start();		
-		
+		// Send.start();
+		// Receive.start();
+
 	}
 }
-class SlaveThread {
-                            
-	  				
-	String msg = new String();	
-	//Intializing count
+
+class SlaveThreading {
+	String msg = new String();
+	// Intializing count
 	Random rand = new Random();
-	int count = rand.nextInt(49)+1;
+	int count = rand.nextInt(49) + 1;
 	int adjust = 0;
-	boolean synched = false;
-	static boolean syncComplete = false;
-	
-	int nodes = 0;
-	//generating ID
-	int ID = 0;
-	
-	public void Sync() throws Exception{
-		
-	InetAddress group = InetAddress.getByName("224.0.0.1");
-	// InetAddress group = InetAddress.getByName("");
-	MulticastSocket r = new MulticastSocket(6789);
-	byte[] buf = new byte[1000];
-	DatagramPacket recv = new DatagramPacket(buf, buf.length);
-	r.joinGroup(group);
-	while(!syncComplete)
-	{
-		r.receive(recv);
-		String message = new String(recv.getData(),0,recv.getLength());
-		String[] sync = message.split(":");
-		if(sync.length==4){
-			
-		
-			if(!synched){
+	// delay used to calculate sys time
+	long delay_milisec = 0;
+	static final long ONE_SEC_IN_MILLI = 1000;
+	// checker
+	boolean isSynched = false;
+	static boolean isComplete = false;
+	// checker
+	int ID_assigned = 0;
+	int nodeCount = 0;
 
-				System.out.println("New offset received");
-				System.out.println("Synchronizing with the time daemon....");
-				count = Integer.valueOf(sync[1])+count;
-				ID = Integer.valueOf(sync[2]);
-				nodes = Integer.valueOf(sync[3]);
-				System.out.println("New count: "+count);
-				System.out.println("ID assigned: "+ID);
-				synched = true;
-				System.out.println();
-				if(ID==nodes)
-				{
-					syncComplete = true;
-				}
-			}
-			else{
+	public void ReceiveTimeRequest() throws Exception {
+		System.out.println("count: " + count);
+		InetAddress group = InetAddress.getByName("224.0.0.1");
+		// TODO
+		MulticastSocket recv_soc = new MulticastSocket(6789);
+		MulticastSocket send_soc = new MulticastSocket(6788);
+		recv_soc.joinGroup(group);
+		byte[] buffer = new byte[1000];
+		DatagramPacket recv = new DatagramPacket(buffer, buffer.length);
+		recv_soc.receive(recv);
+		String message = new String(recv.getData(), 0, recv.getLength());
+		// int daemon_count = Integer.parseInt(message);
+		// System.out.println("daemon_count:"+daemon_count);
 
-				System.out.println("New offset received. Offset: "+sync[0]);
-				System.out.println("Synchronizing to the new average....");
-				count = Integer.valueOf(sync[0]) + count;
-				System.out.println("Synchronization complete. New count: "+count);	
-				System.out.println();
-				if(Integer.valueOf(sync[2])==nodes)
-				{
-					syncComplete = true;
-				}					
-			}
-		}
-		
+		// Send System Time back to server
+		System.out.println("Here is your time request" + message);
+		// if (message == "TIME_REQUEST") {
+		// System.out.println("offset of " + diff + " sent to the time daemon");
+		// int diff = count - daemon_count;
+		System.out.println("System time in miliseconds sent to Master");
+		long sys_time = Calendar.getInstance().getTimeInMillis() + delay_milisec;
+		msg = Long.toString(sys_time);
+		DatagramPacket time_response = new DatagramPacket(msg.getBytes(), msg.length(), group, 6788);
+		send_soc.send(time_response);
+		// }
+		// else {
+		// System.out.println("wrong request form");
+		// }
+		recv_soc.close();
+		send_soc.close();
 	}
-	}
-	
-	public void ReceiveTime() throws Exception{
-		
-	System.out.println("count: "+count);
-	InetAddress group = InetAddress.getByName("224.0.0.1");
-	MulticastSocket r = new MulticastSocket(6789);
-	MulticastSocket s = new MulticastSocket(6788);
-	r.joinGroup(group);
-	byte[] buf = new byte[1000];
-	DatagramPacket recv = new DatagramPacket(buf, buf.length);
-	r.receive(recv);
-	String message = new String(recv.getData(),0,recv.getLength());
-	int daemon_count = Integer.parseInt(message);
-	System.out.println("daemon_count:"+daemon_count);
-	int diff = count - daemon_count;
-	System.out.println("offset of "+diff+" sent to the time daemon");
-	msg = Integer.toString(diff);
-	
-	DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(),group, 6788);
-	s.send(hi);
-		
-	}
-	
-	public void SendMsg() throws Exception{
-		String msg = "";
+
+	public void SyncWithMaster() throws Exception {
 		InetAddress group = InetAddress.getByName("224.0.0.1");
-		MulticastSocket s = new MulticastSocket(6788);
-		while(!syncComplete)
-			Thread.sleep(5000);
-		int[] vector = new int[nodes];
-		System.out.println("Sending Messages....");
-		System.out.println();
-			for(int i=0;i<2;i++)
-			{
-	
-					int temp = rand.nextInt(3000)+1000;
-					Thread.sleep(temp);
-					msg = "message "+i+" from process "+ID;
-					DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(),group, 6788);
-					s.send(hi);
-					
-			}			
-	}
-	
-	public void ReceiveMsg() throws Exception{
-		String message = "";
-		InetAddress group = InetAddress.getByName("224.0.0.1");
-		MulticastSocket r = new MulticastSocket(6788);
-		r.joinGroup(group);
+		// InetAddress group = InetAddress.getByName("");
+		MulticastSocket recv_soc = new MulticastSocket(6789);
 		byte[] buf = new byte[1000];
 		DatagramPacket recv = new DatagramPacket(buf, buf.length);
-		while(!syncComplete)
-			Thread.sleep(5000);
-		//System.out.println("Receiving messages");	
-	
-		while(true){
-
-				r.receive(recv);
-				message = new String(recv.getData(),0,recv.getLength());
-				if(message.length()>15){
-					System.out.println("Received "+message);
+		recv_soc.joinGroup(group);
+		while (!isComplete) {
+			recv_soc.receive(recv);
+			String message = new String(recv.getData(), 0, recv.getLength());
+			String[] sync = message.split(":");
+			if (sync.length == 4) {
+				if (!isSynched) {
+					System.out.println("New offset adjustment received from Master");
+					System.out.println("Time synchronizing....");
+					System.out.println("offset is " + sync[1]);
+					//update delay milisec 
+					delay_milisec += Long.valueOf(sync[1]);
+					System.out.println(delay_milisec);
+					long udpated_sys_time_in_mili = Calendar.getInstance().getTimeInMillis()
+							+ delay_milisec;
+					ID_assigned = Integer.valueOf(sync[2]);
+					nodeCount = Integer.valueOf(sync[3]);
+					SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+					System.out.println("ID assigned from Master: " + ID_assigned);
+					System.out.println("New System Time: " + sdf.format(udpated_sys_time_in_mili));
+					isSynched = true;
+					System.out.println();
+					if (ID_assigned == nodeCount) {
+						isComplete = true;
+					}
 				}
-							
+				// else {
+
+				// System.out.println("New offset received. Offset: " + sync[0]);
+				// System.out.println("Synchronizing to the new average....");
+				// count = Integer.valueOf(sync[0]) + count;
+				// System.out.println("Synchronization complete. New count: " + count);
+				// System.out.println();
+				// if (Integer.valueOf(sync[2]) == nodes) {
+				// isComplete = true;
+				// }
+				// }
+			}
+
 		}
-		
+		recv_soc.close();
+	}
+
+	// public void SendMsg() throws Exception {
+	// String msg = "";
+	// InetAddress group = InetAddress.getByName("224.0.0.1");
+	// MulticastSocket s = new MulticastSocket(6788);
+	// while (!isComplete)
+	// Thread.sleep(1000);
+	// int[] vector = new int[nodeCount];
+	// System.out.println("Sending Messages....");
+	// System.out.println();
+	// for (int i = 0; i < 2; i++) {
+
+	// int temp = rand.nextInt(3000) + 1000;
+	// Thread.sleep(temp);
+	// msg = "message " + i + " from process " + ID_assigned;
+	// DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), group,
+	// 6788);
+	// s.send(hi);
+
+	// }
+	// }
+
+	// public void ReceiveMsg() throws Exception {
+	// String message = "";
+	// InetAddress group = InetAddress.getByName("224.0.0.1");
+	// MulticastSocket r = new MulticastSocket(6788);
+	// r.joinGroup(group);
+	// byte[] buf = new byte[1000];
+	// DatagramPacket recv = new DatagramPacket(buf, buf.length);
+	// while (!isComplete)
+	// Thread.sleep(5000);
+	// // System.out.println("Receiving messages");
+
+	// while (true) {
+
+	// r.receive(recv);
+	// message = new String(recv.getData(), 0, recv.getLength());
+	// if (message.length() > 15) {
+	// System.out.println("Received " + message);
+	// }
+
+	// }
+
+	// }
+
+	public void setSlaveTime(int num) {
+		delay_milisec = (long) num * ONE_SEC_IN_MILLI;
 	}
 }
