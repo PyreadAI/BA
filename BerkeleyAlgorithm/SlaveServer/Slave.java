@@ -63,23 +63,15 @@ class SlaveThreading {
 		DatagramPacket recv = new DatagramPacket(buffer, buffer.length);
 		recv_soc.receive(recv);
 		String message = new String(recv.getData(), 0, recv.getLength());
-		// int daemon_count = Integer.parseInt(message);
-		// System.out.println("daemon_count:"+daemon_count);
-
 		// Send System Time back to server
 		System.out.println("Here is your time request" + message);
-		// if (message == "TIME_REQUEST") {
-		// System.out.println("offset of " + diff + " sent to the time daemon");
-		// int diff = count - daemon_count;
+
 		System.out.println("System time in miliseconds sent to Master");
 		long sys_time = Calendar.getInstance().getTimeInMillis() + delay_milisec;
 		msg = Long.toString(sys_time);
 		DatagramPacket time_response = new DatagramPacket(msg.getBytes(), msg.length(), group, 8010);
 		send_soc.send(time_response);
-		// }
-		// else {
-		// System.out.println("wrong request form");
-		// }
+
 		recv_soc.close();
 		send_soc.close();
 	}
@@ -100,11 +92,10 @@ class SlaveThreading {
 					System.out.println("New offset adjustment received from Master");
 					System.out.println("Time synchronizing....");
 					System.out.println("offset is " + sync[1]);
-					//update delay milisec 
+					// update delay milisec
 					delay_milisec += Long.valueOf(sync[1]);
 					System.out.println(delay_milisec);
-					long udpated_sys_time_in_mili = Calendar.getInstance().getTimeInMillis()
-							+ delay_milisec;
+					long udpated_sys_time_in_mili = Calendar.getInstance().getTimeInMillis() + delay_milisec;
 					ID_assigned = Integer.valueOf(sync[2]);
 					nodeCount = Integer.valueOf(sync[3]);
 					SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
@@ -115,24 +106,28 @@ class SlaveThreading {
 					if (ID_assigned == nodeCount) {
 						isComplete = true;
 					}
+				} else {
+					System.out.println("reach");
+					System.out.println("New offset adjustment received from Master");
+					System.out.println("Time synchronizing....");
+					System.out.println("offset is " + sync[0]);
+					// update delay milisec
+					System.out.println("the delay now is" + delay_milisec);
+					delay_milisec += Long.valueOf(sync[0]);
+					System.out.println(delay_milisec);
+					long udpated_sys_time_in_mili = Calendar.getInstance().getTimeInMillis() + delay_milisec;
+					nodeCount = Integer.valueOf(sync[3]);
+					SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+					System.out.println("New System Time: " + sdf.format(udpated_sys_time_in_mili));
+					if (Integer.valueOf(sync[2]) == nodeCount) {
+						isComplete = true;
+					}
 				}
-				// else {
-
-				// System.out.println("New offset received. Offset: " + sync[0]);
-				// System.out.println("Synchronizing to the new average....");
-				// count = Integer.valueOf(sync[0]) + count;
-				// System.out.println("Synchronization complete. New count: " + count);
-				// System.out.println();
-				// if (Integer.valueOf(sync[2]) == nodes) {
-				// isComplete = true;
-				// }
-				// }
 			}
 
 		}
 		recv_soc.close();
 	}
-
 
 	public void setSlaveTime(int num) {
 		delay_milisec = (long) num * ONE_SEC_IN_MILLI;
